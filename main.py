@@ -7,15 +7,17 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import nltk
 
-# Add paths where punkt will be located (downloaded at build time or fallback)
-nltk.data.path.append("/root/nltk_data")  # Leapcell build step location
-nltk.data.path.append(os.path.join(os.getcwd(), "nltk_data"))  # local folder if needed
-nltk.data.path.append("/tmp/nltk_data")  # fallback location
+# Add paths where punkt may be located (build-time or fallback)
+nltk.data.path.append("/root/nltk_data")
+nltk.data.path.append(os.path.join(os.getcwd(), "nltk_data"))
+nltk.data.path.append("/tmp/nltk_data")
 
-import pathlib
-# Download punkt if missing
-if not pathlib.Path("/root/nltk_data/tokenizers/punkt").exists():
+# Safe check and download punkt if missing, avoid permission errors
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
     nltk.download("punkt", download_dir="/tmp/nltk_data")
+    nltk.data.path.append("/tmp/nltk_data")
 
 app = FastAPI()
 
